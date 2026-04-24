@@ -1,0 +1,12 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  "json.validate.enable": false,
+  "json.schemas": [
+    {
+      "fileMatch": ["/frontend/tsconfig.json", "/backend/tsconfig.json"],
+      "url": "./.vscode/tsconfig.local.schema.json"
+    }
+  ]
+}

@@ -1,202 +1,86 @@
-# Campus Exchange App
+# Campus Cartel
 
-A React Native/Expo application for buying, selling, and renting items between college students.
+Campus Cartel is now a web-first platform for student-only peer-to-peer renting and reselling inside college clusters.
 
-## Features
+This repository has been migrated from Bolt/Expo mobile scaffolding to a production-oriented monorepo:
 
-- **Product Listings**: Browse and search for items by category
-- **Add Items**: List your own items for sale or rent
-- **Messaging**: Chat with other users about items
-- **User Profiles**: Manage your profile and listings
-- **Search & Filters**: Advanced search with multiple filter options
-- **Real-time Updates**: Live updates for messages and listings
+- `frontend`: Next.js + React + Supabase client integration
+- `backend`: Node.js + Express + Supabase-aware API service
 
-## Tech Stack
+## Product Direction
 
-- **Frontend**: React Native with Expo
-- **Navigation**: Expo Router
-- **Backend**: Firebase (Firestore, Storage, Auth)
-- **UI Components**: Custom components with Lucide React Native icons
-- **State Management**: React hooks and context
-- **TypeScript**: Full type safety
+Campus Cartel focuses on trust-first campus commerce:
 
-## Recent Fixes and Improvements
+- Student-only onboarding with college domain verification and optional ID checks
+- Rent/Buy switch for each listing
+- Campus radius discovery for nearby colleges
+- Chat-first transactions for meetup and negotiation
+- Trust score and rating system (planned)
 
-### 1. Firebase Configuration
-- **Issue**: Hardcoded demo Firebase configuration
-- **Fix**: Added environment variable support for production deployment
-- **Improvement**: Better error handling for Firebase initialization
+## Stack
 
-### 2. Error Handling
-- **Issue**: Inconsistent error handling across the app
-- **Fix**: Created comprehensive error handling utility (`utils/errorHandling.ts`)
-- **Improvement**: Centralized error management with specific error types
+- Frontend: Next.js 15, React 19, TypeScript
+- Backend: Express, TypeScript, Zod, Helmet, CORS
+- Database/Auth: Supabase (Postgres + Auth + Storage)
+- Tooling: npm workspaces, concurrently
 
-### 3. Image Loading
-- **Issue**: No loading states or error handling for images
-- **Fix**: Added loading indicators and fallback images in ProductCard
-- **Improvement**: Better user experience with visual feedback
+## Repository Structure
 
-### 4. Data Validation
-- **Issue**: Limited input validation
-- **Fix**: Enhanced validation utilities with comprehensive checks
-- **Improvement**: Better data integrity and user feedback
-
-### 5. Type Safety
-- **Issue**: Some type assertions and missing type definitions
-- **Fix**: Improved TypeScript configurations and type definitions
-- **Improvement**: Better development experience and fewer runtime errors
-
-### 6. Performance
-- **Issue**: No caching or optimization utilities
-- **Fix**: Added performance utilities for caching and optimization
-- **Improvement**: Better app performance and user experience
-
-## Project Structure
-
-```
-collge/
-├── app/                    # Expo Router pages
-│   ├── (tabs)/            # Tab navigation screens
-│   │   ├── index.tsx      # Home screen
-│   │   ├── search.tsx     # Search screen
-│   │   ├── add.tsx        # Add item screen
-│   │   ├── chat.tsx       # Messages screen
-│   │   └── profile.tsx    # Profile screen
-│   └── _layout.tsx        # Root layout
-├── components/            # Reusable UI components
-│   ├── ProductCard.tsx    # Product display component
-│   └── CategoryButton.tsx # Category filter component
-├── services/             # API and external services
-│   ├── firebase.ts       # Firebase configuration
-│   ├── products.ts       # Product-related API calls
-│   └── auth.ts           # Authentication services
-├── utils/                # Utility functions
-│   ├── validation.ts     # Input validation
-│   ├── location.ts       # Location utilities
-│   ├── errorHandling.ts  # Error handling utilities
-│   └── performance.ts    # Performance optimization
-├── types/                # TypeScript type definitions
-│   └── index.ts          # Main type definitions
-└── hooks/                # Custom React hooks
-    └── useFrameworkReady.ts
+```text
+CampusCartel/
+    backend/
+        src/
+        supabase/
+    frontend/
+        app/
+        components/
+        lib/
+    DEPLOYMENT.md
+    README.md
+    package.json
 ```
 
-## Getting Started
+## Local Setup
 
-### Prerequisites
+1. Install dependencies
 
-- Node.js (v16 or higher)
-- npm or yarn
-- Expo CLI
-- iOS Simulator or Android Emulator (optional)
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd collge
-```
-
-2. Install dependencies:
 ```bash
 npm install
 ```
 
-3. Set up environment variables:
-Create a `.env` file in the root directory with your Firebase configuration:
-```
-EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key
-EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
-EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
-EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
-```
+2. Create environment files
 
-4. Start the development server:
+- Copy `backend/.env.example` to `backend/.env`
+- Copy `frontend/.env.example` to `frontend/.env.local`
+
+3. Start both services
+
 ```bash
-npm start
+npm run dev
 ```
 
-5. Run on your preferred platform:
-- Press `i` for iOS simulator
-- Press `a` for Android emulator
-- Press `w` for web browser
-- Scan QR code with Expo Go app on your phone
+- Frontend runs on `http://localhost:3000`
+- Backend runs on `http://localhost:4000`
 
-## Key Components
+## Scripts
 
-### ProductCard
-Enhanced with:
-- Loading states for images
-- Error handling with fallback images
-- Better touch feedback
-- Improved accessibility
+- `npm run dev` - run frontend + backend in parallel
+- `npm run build` - build both projects
+- `npm run lint` - lint both projects
+- `npm run typecheck` - typecheck both projects
 
-### Validation System
-Comprehensive validation for:
-- Email addresses (including college email validation)
-- Phone numbers
-- Product information
-- Location data
-- Image URLs
+## MVP Scope Implemented
 
-### Error Handling
-Centralized error management with:
-- Custom error classes
-- Firebase-specific error messages
-- Network error handling
-- User-friendly error messages
+- Modern web landing page and listings UI shell
+- REST API for health, colleges, and listings
+- Input validation and centralized error handling
+- Supabase-ready service configuration with env-driven setup
+- Security baseline (Helmet, CORS, request IDs)
 
-## Development Guidelines
+## Planned Next Milestones
 
-### Code Style
-- Use TypeScript for all new code
-- Follow React Native best practices
-- Use functional components with hooks
-- Implement proper error boundaries
-
-### Testing
-- Test components in isolation
-- Validate user inputs
-- Test error scenarios
-- Performance testing for large lists
-
-### Performance
-- Use the provided caching utilities
-- Implement proper list virtualization
-- Optimize image loading
-- Monitor memory usage
-
-## Deployment
-
-### Web
-```bash
-npm run build:web
-```
-
-### Mobile
-1. Configure app.json with your app details
-2. Build for production:
-```bash
-expo build:android  # for Android
-expo build:ios      # for iOS
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License.
-
-## Support
-
-For support and questions, please open an issue in the repository. 
+1. Supabase Auth with college-email and invite-code gates
+2. OCR-based student ID verification workflow
+3. Real-time chat with row-level security rules
+4. Trust score, rating, and moderation dashboards
+5. Enterprise CI/CD, observability, and SLO tracking

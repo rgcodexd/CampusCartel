@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-main: radial-gradient(circle at 10% 15%, #f9d29d 0%, #f2a65a 25%, #2f4858 90%);
+  --surface: rgba(255, 255, 255, 0.86);
+  --ink: #10223d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg-main);
+  color: var(--ink);
+}
+
+.hero-grid {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.25) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.25) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.card-surface {
+  background: var(--surface);
+  backdrop-filter: blur(6px);
+}
