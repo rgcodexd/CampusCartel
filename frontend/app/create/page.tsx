@@ -29,6 +29,16 @@ export default function CreateListingPage() {
       }
     });
   }, [router]);
+  
+  useEffect(() => {
+    if (!session) return;
+    (async () => {
+      const { data: profile } = await supabase.from("profiles").select("is_verified").eq("id", session.user.id).maybeSingle();
+      if (!profile || !profile.is_verified) {
+        router.push("/profile");
+      }
+    })();
+  }, [session, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +48,9 @@ export default function CreateListingPage() {
 
     try {
       const studentId = session.user.id;
-      const studentEmail = session.user.email || "";
+      // prefer college_email from profiles for verification headers
+      const { data: profile } = await supabase.from("profiles").select("college_email").eq("id", studentId).maybeSingle();
+      const studentEmail = profile?.college_email || session.user.email || "";
 
       await createListing(formData, studentId, studentEmail);
       router.push(`/listings?mode=${formData.mode}`);
@@ -118,7 +130,6 @@ export default function CreateListingPage() {
                 required
                 value={formData.priceLabel}
                 onChange={handleChange}
-                placeholder="e.g. $50/sem or $100"
                 placeholder="e.g. ₹50/sem or ₹1000"
                 className="w-full bg-background border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
               />

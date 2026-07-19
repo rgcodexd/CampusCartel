@@ -92,11 +92,30 @@ create table if not exists public.profiles (
   email text,
   college text,
   phone text,
+  college_email text,
+  student_id text,
+  id_card_url text,
+  is_verified boolean default false,
   updated_at timestamptz default now()
 );
 ```
 
 If you prefer, you can store user metadata in Supabase Auth, but the `profiles` table gives more flexibility.
+
+### Auto-verification by domain
+
+You can enable automatic verification when a user supplies a `college_email` that matches an approved domain list. Set the approved domains as a comma-separated env var in your backend `.env`:
+
+```env
+APPROVED_COLLEGE_DOMAINS=edu.in,ac.in,mycollege.edu
+```
+
+The backend exposes endpoints to check a domain and to attempt auto-verification:
+
+- `GET /api/v1/profiles/check-domain?email=...` — returns `{ autoVerify: true|false }`
+- `POST /api/v1/profiles/auto-verify` — body `{ id, college_email }` will set `is_verified=true` when matched
+
+The frontend profile editor uses these endpoints to show verification status and auto-verify after saving.
 
 ## 5. Enable authentication (recommended)
 
