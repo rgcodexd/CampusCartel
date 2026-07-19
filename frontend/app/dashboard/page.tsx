@@ -61,8 +61,8 @@ export default function DashboardPage() {
         }));
         if (mounted) setListings(mine);
         // If no profile exists, ask user to complete profile
-        const { data: profile } = await supabase.from("profiles").select("id").eq("id", session.user.id).maybeSingle();
-        if (!profile) {
+        const { data: profile } = await supabase.from("profiles").select("id,is_verified").eq("id", session.user.id).maybeSingle();
+        if (!profile || !profile.is_verified) {
           router.push("/profile");
         }
       } catch (err) {
@@ -136,13 +136,13 @@ export default function DashboardPage() {
                       <img src={item.image} alt={item.title} className="h-full object-contain" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex justify-between items-start">
                         <h3 className="font-semibold text-sm text-foreground truncate">{item.title}</h3>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          item.badge === "Active" ? "bg-green-500/10 text-green-600" : "bg-muted text-muted-foreground"
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                          item.badge === "For Rent" ? "bg-primary/10 text-primary" : "bg-green-500/10 text-green-600"
                         }`}>{item.badge}</span>
                       </div>
-                      <p className="text-xs font-medium text-foreground mt-0.5">{item.price}</p>
+                      <p className="text-xs font-medium text-foreground mt-0.5">{item.priceLabel}</p>
                       <div className="flex items-center gap-3 mt-1 text-[11px] text-muted-foreground">
                         <span className="flex items-center gap-1"><Eye className="h-3 w-3" /> {item.views} views</span>
                         <span className="flex items-center gap-1"><MessageCircle className="h-3 w-3" /> {item.chats} Chats</span>

@@ -14,9 +14,21 @@ const responseSchema = z.object({
   items: z.array(rawListingSchema),
 });
 
-export async function fetchListings(mode: "rent" | "buy") {
+export async function fetchListings(
+  mode: "rent" | "buy" | "all" = "all",
+  lat?: number,
+  lng?: number,
+  radiusKm?: number
+) {
   const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-  const response = await fetch(`${api}/api/v1/listings?mode=${mode}`, {
+  
+  const params = new URLSearchParams();
+  if (mode !== "all") params.append("mode", mode);
+  if (lat !== undefined) params.append("lat", lat.toString());
+  if (lng !== undefined) params.append("lng", lng.toString());
+  if (radiusKm !== undefined) params.append("radiusKm", radiusKm.toString());
+
+  const response = await fetch(`${api}/api/v1/listings?${params.toString()}`, {
     cache: "no-store",
   });
 

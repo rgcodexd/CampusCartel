@@ -9,7 +9,11 @@ export default function ProfilePage() {
   const [name, setName] = useState("");
   const [college, setCollege] = useState("");
   const [phone, setPhone] = useState("");
+  const [collegeEmail, setCollegeEmail] = useState("");
+  const [studentId, setStudentId] = useState("");
+  const [colleges, setColleges] = useState<Array<any>>([]);
   const [message, setMessage] = useState("");
+  const [autoVerifyPossible, setAutoVerifyPossible] = useState<boolean | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -22,13 +26,37 @@ export default function ProfilePage() {
           setName(data.full_name || "");
           setCollege(data.college || "");
           setPhone(data.phone || "");
+          setCollegeEmail(data.college_email || "");
+          setStudentId(data.student_id || "");
         }
       } catch (err) {
         // ignore
       }
     });
+    // load colleges list from backend
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/colleges`).then((r) => r.json()).then((j) => setColleges(j.items || [])).catch(() => {});
     return () => { mounted = false };
   }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    setAutoVerifyPossible(null);
+    const email = collegeEmail?.trim();
+    if (!email || !email.includes("@")) return;
+    const t = setTimeout(() => {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/profiles/check-domain?email=${encodeURIComponent(email)}`)
+        .then((r) => r.json())
+        .then((j) => {
+          if (!mounted) return;
+          setAutoVerifyPossible(Boolean(j?.autoVerify));
+        })
+        .catch(() => {
+          if (!mounted) return;
+          setAutoVerifyPossible(false);
+        });
+    }, 400);
+    return () => { mounted = false; clearTimeout(t); };
+  }, [collegeEmail]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,13 +77,33 @@ export default function ProfilePage() {
         full_name: name,
         college,
         phone,
+        college_email: collegeEmail,
+        student_id: studentId,
         email: session.user.email,
+        is_verified: false,
       };
 
       const { error } = await supabase.from("profiles").upsert(payload);
 
       if (error) throw error;
-      setMessage("Profile saved.");
+      // attempt auto-verify via backend
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/profiles/auto-verify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: session.user.id, college_email: collegeEmail }),
+        });
+        const j = await res.json();
+        if (j?.autoVerified) {
+          setMessage("Profile saved and auto-verified.");
+          setAutoVerifyPossible(true);
+        } else {
+          setMessage("Profile saved. Pending verification.");
+          setAutoVerifyPossible(false);
+        }
+      } catch (e) {
+        setMessage("Profile saved. Verification check failed.");
+      }
     } catch (err: any) {
       setMessage(err.message || "Failed to save profile");
     } finally {
@@ -72,7 +120,18 @@ export default function ProfilePage() {
           <input value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-background border rounded-xl px-4 py-3" />
 
           <label className="text-sm font-medium">College</label>
-          <input value={college} onChange={(e) => setCollege(e.target.value)} className="w-full bg-background border rounded-xl px-4 py-3" />
+          <select value={college} onChange={(e) => setCollege(e.target.value)} className="w-full bg-background border rounded-xl px-4 py-3">
+            <option value="">Select your college</option>
+            {colleges.map((c: any) => (
+              <option key={c.id} value={c.id}>{c.name} — {c.city}</option>
+            ))}
+          </select>
+
+          <label className="text-sm font-medium">College email (required for verification)</label>
+          <input value={collegeEmail} onChange={(e) => setCollegeEmail(e.target.value)} placeholder="you@college.edu" className="w-full bg-background border rounded-xl px-4 py-3" />
+
+          <label className="text-sm font-medium">College / Roll number</label>
+          <input value={studentId} onChange={(e) => setStudentId(e.target.value)} placeholder="e.g. 2023CS1001" className="w-full bg-background border rounded-xl px-4 py-3" />
 
           <label className="text-sm font-medium">Phone</label>
           <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full bg-background border rounded-xl px-4 py-3" />

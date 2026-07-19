@@ -1,13 +1,22 @@
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
-import morgan from "morgan";
 import { env } from "./config/env.js";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler.js";
 import { requestIdMiddleware } from "./middleware/request-id.js";
 import { collegesRouter } from "./routes/colleges.js";
 import { healthRouter } from "./routes/health.js";
 import { listingsRouter } from "./routes/listings.js";
+import { profilesRouter } from "./routes/profiles.js";
+
+import pinoHttpMod from "pino-http";
+const pinoHttp = pinoHttpMod.pinoHttp || pinoHttpMod;
+
+const logger = pinoHttp({
+  transport: process.env.NODE_ENV !== "production"
+    ? { target: "pino-pretty", options: { colorize: true } }
+    : undefined,
+});
 
 export function createApp() {
   const app = express();
@@ -16,10 +25,11 @@ export function createApp() {
   app.use(cors({ origin: env.CORS_ORIGIN }));
   app.use(express.json({ limit: "1mb" }));
   app.use(requestIdMiddleware);
-  app.use(morgan("combined"));
+  app.use(logger);
 
   app.use(healthRouter);
   app.use(collegesRouter);
+  app.use(profilesRouter);
   app.use(listingsRouter);
 
   app.use(notFoundHandler);
