@@ -2,30 +2,57 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg-main: radial-gradient(circle at 10% 15%, #f9d29d 0%, #f2a65a 25%, #2f4858 90%);
-  --surface: rgba(255, 255, 255, 0.86);
-  --ink: #10223d;
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --surface: 0 0% 98%;
+    --border: 214.3 31.8% 91.4%;
+    
+    --primary: 258 75% 50%; /* #5a28e5 approx */
+    --primary-foreground: 210 40% 98%;
+    
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    
+    --ink: 222.2 84% 4.9%;
+    --mint: 160 100% 33%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --surface: 217.2 32.6% 17.5%;
+    --border: 217.2 32.6% 17.5%;
+    
+    --primary: 258 75% 65%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    
+    --ink: 210 40% 98%;
+  }
 }
 
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: var(--bg-main);
-  color: var(--ink);
-}
-
-.hero-grid {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.25) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.25) 1px, transparent 1px);
-  background-size: 22px 22px;
+@layer base {
+  * {
+    @apply border-[hsl(var(--border))];
+  }
+  body {
+    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))] min-h-screen antialiased;
+  }
 }
 
 .card-surface {
-  background: var(--surface);
-  backdrop-filter: blur(6px);
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
 }
+
+.hero-gradient {
+  background: radial-gradient(circle at top right, rgba(90, 40, 229, 0.05), transparent 400px);
+}
+.dark .hero-gradient {
+  background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.15), transparent 400px);
+}
+

@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { z } from "zod";
-import { listingsSeed } from "../data/seed-colleges.js";
 import { AppError } from "../middleware/error-handler.js";
 import { requireStudentVerification } from "../middleware/student-auth.js";
+import { supabase } from "../supabase/client.js";
 
 const querySchema = z.object({
   mode: z.enum(["rent", "buy"]).optional(),
@@ -18,28 +18,36 @@ const createListingSchema = z.object({
   distanceKm: z.number().min(0),
 });
 
-const listingsStore = [...listingsSeed];
-
 export const listingsRouter = Router();
 
-listingsRouter.get("/api/v1/listings", (req, res, next) => {
+listingsRouter.get("/api/v1/listings", async (req, res, next) => {
   try {
     const query = querySchema.parse(req.query);
     const normalizedQ = query.q?.toLowerCase().trim();
 
-    const filtered = listingsStore.filter((item) => {
-      const modeMatch = query.mode ? item.mode === query.mode : true;
-      const textMatch = normalizedQ ? item.title.toLowerCase().includes(normalizedQ) : true;
-      return modeMatch && textMatch;
-    });
+    let dbQuery = supabase.from("listings").select("*").order("created_at", { ascending: false });
 
-    res.status(200).json({ items: filtered });
+    if (query.mode) {
+      dbQuery = dbQuery.eq("mode", query.mode);
+    }
+
+    if (normalizedQ) {
+      dbQuery = dbQuery.ilike("title", `%${normalizedQ}%`);
+    }
+
+    const { data, error } = await dbQuery;
+
+    if (error) {
+      throw new AppError(500, `Database error: ${error.message}`);
+    }
+
+    res.status(200).json({ items: data });
   } catch (error) {
     next(error);
   }
 });
 
-listingsRouter.post("/api/v1/listings", requireStudentVerification, (req, res, next) => {
+listingsRouter.post("/api/v1/listings", requireStudentVerification, async (req, res, next) => {
   try {
     const payload = createListingSchema.parse(req.body);
     const ownerStudentId = req.header("x-student-id");
@@ -48,14 +56,25 @@ listingsRouter.post("/api/v1/listings", requireStudentVerification, (req, res, n
       throw new AppError(401, "Missing x-student-id header");
     }
 
-    const newItem = {
-      id: `lst-${Date.now()}`,
-      ...payload,
-      ownerStudentId,
-    };
+    const { data, error } = await supabase
+      .from("listings")
+      .insert({
+        title: payload.title,
+        mode: payload.mode,
+        category: payload.category,
+        college: payload.college,
+        price_label: payload.priceLabel,
+        distance_km: payload.distanceKm,
+        owner_student_id: ownerStudentId,
+      })
+      .select()
+      .single();
 
-    listingsStore.unshift(newItem);
-    res.status(201).json(newItem);
+    if (error) {
+      throw new AppError(500, `Database error: ${error.message}`);
+    }
+
+    res.status(201).json(data);
   } catch (error) {
     next(error);
   }
