@@ -32,28 +32,25 @@ This guide will walk you through deploying the CampusCartel frontend and backend
 6. Set **Health Check Path** to `/api/health`.
 7. Click **Create Web Service**.
 
-## Step 2: Deploy the Frontend (Static Site)
+## Step 2: Deploy the Frontend (Web Service)
 
-1. Go back to your Render dashboard and click **New+** -> **Static Site**. (Do NOT select Web Service for the frontend).
+1. Go back to your Render dashboard and click **New+** -> **Web Service**. *(Note: Next.js dynamic routing requires a Node.js server, so this must be a Web Service, not a Static Site).*
 2. Connect the same repository (`CampusCartel`).
 3. Configure the service:
    - **Name:** `campus-cartel-frontend`
    - **Root Directory:** `frontend`
+   - **Environment:** `Node`
    - **Build Command:** `npm install && npm run build`
-   - **Publish directory:** `out`
+   - **Start Command:** `npm run start`
+   - **Instance Type:** Select the **Free** plan ($0/month).
 4. Click **Advanced** and add the following Environment Variables:
    - `NEXT_PUBLIC_API_URL`: The URL of your deployed backend (e.g., `https://campus-cartel-backend.onrender.com`)
    - `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase Project URL.
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase `anon` public key.
-5. In the Advanced settings, configure **Redirects/Rewrites**:
-   - **Source:** `/*`
-   - **Destination:** `/index.html`
-   - **Action:** `Rewrite`
-   *(This ensures client-side routing works properly for Next.js static exports).*
-6. Click **Create Static Site**.
+5. Set **Health Check Path** to `/`.
+6. Click **Create Web Service**.
 
 ## Post-Deployment Notes
 
-- **Static Site Advantage:** Since the frontend is deployed as a Static Site, it **will not spin down** and loads instantly for users. Static Sites on Render are completely free.
-- **Backend Spin Downs:** Render's free tier for Web Services spins down the backend after 15 minutes of inactivity. When a new request comes in, the backend may take 30-60 seconds to wake up.
+- **Spin Downs:** Render's free tier spins down Web Services after 15 minutes of inactivity. When a new request comes in, the service may take 30-60 seconds to wake up.
 - **Continuous Deployment:** Any pushes to the `main` branch will automatically trigger redeployments for both services.
