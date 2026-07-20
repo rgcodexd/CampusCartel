@@ -2,6 +2,7 @@ services:
   - type: web
     name: campus-cartel-backend
     env: node
+    plan: free
     rootDir: backend
     buildCommand: npm install && npm run build
     startCommand: npm run start
@@ -21,13 +22,12 @@ services:
         # Supabase transaction pooler URL with port 6543
         sync: false
 
-  - type: web
+  - type: static
     name: campus-cartel-frontend
-    env: node
+    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
-    startCommand: npm run start
-    healthCheckPath: /
+    staticPublishPath: ./out
     envVars:
       - key: NODE_ENV
         value: production
@@ -37,3 +37,7 @@ services:
         sync: false
       - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
         sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

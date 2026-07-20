@@ -8,6 +8,9 @@ import { collegesRouter } from "./routes/colleges.js";
 import { healthRouter } from "./routes/health.js";
 import { listingsRouter } from "./routes/listings.js";
 import { profilesRouter } from "./routes/profiles.js";
+import { chatsRouter } from "./routes/chats.js";
+import { leaderboardRouter } from "./routes/leaderboard.js";
+import { moderationRouter } from "./routes/moderation.js";
 
 import pinoHttpMod from "pino-http";
 const pinoHttp = pinoHttpMod.pinoHttp || pinoHttpMod;
@@ -31,6 +34,9 @@ export function createApp() {
   app.use(collegesRouter);
   app.use(profilesRouter);
   app.use(listingsRouter);
+  app.use(chatsRouter);
+  app.use(leaderboardRouter);
+  app.use(moderationRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
