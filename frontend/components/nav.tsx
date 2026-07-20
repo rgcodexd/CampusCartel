@@ -142,13 +142,6 @@ export function Nav() {
           {/* ─── AUTH / PROFILE DROPDOWN ─── */}
           {session ? (
             <div className="flex items-center gap-2">
-              <Link
-                href="/create"
-                className="hidden md:flex text-xs font-bold bg-primary text-white px-5 py-2 rounded-full hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/25"
-              >
-                Post Listing
-              </Link>
-              
               <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
