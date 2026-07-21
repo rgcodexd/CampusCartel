@@ -11,6 +11,7 @@ import { profilesRouter } from "./routes/profiles.js";
 import { chatsRouter } from "./routes/chats.js";
 import { leaderboardRouter } from "./routes/leaderboard.js";
 import { moderationRouter } from "./routes/moderation.js";
+import { adminRouter } from "./routes/admin.js";
 
 import pinoHttpMod from "pino-http";
 const pinoHttp = pinoHttpMod.pinoHttp || pinoHttpMod;
@@ -37,6 +38,7 @@ export function createApp() {
   app.use(chatsRouter);
   app.use(leaderboardRouter);
   app.use(moderationRouter);
+  app.use(adminRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

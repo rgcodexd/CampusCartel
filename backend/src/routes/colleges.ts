@@ -63,6 +63,33 @@ collegesRouter.post("/api/v1/colleges/ingest", async (req, res, next): Promise<v
   }
 });
 
+collegesRouter.get("/api/v1/colleges/search", async (req, res, next): Promise<void> => {
+  try {
+    const q = req.query.q as string;
+    const supabase = createSupabaseServiceClient();
+    if (!supabase) {
+      res.status(500).json({ error: "Supabase client not configured" });
+      return;
+    }
+
+    if (!q || q.length < 2) {
+      res.status(200).json({ items: [] });
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("colleges")
+      .select("id, name, city")
+      .ilike("name", `%${q}%`)
+      .limit(20);
+
+    if (error) throw error;
+    res.status(200).json({ items: data });
+  } catch (error) {
+    next(error);
+  }
+});
+
 collegesRouter.get("/api/v1/colleges/nearby", async (req, res, next): Promise<void> => {
   try {
     const { lat, lng, radius_km } = req.query;
@@ -92,6 +119,28 @@ collegesRouter.get("/api/v1/colleges/nearby", async (req, res, next): Promise<vo
   }
 });
 
+collegesRouter.get("/api/v1/colleges/states", async (req, res, next): Promise<void> => {
+  try {
+    const supabase = createSupabaseServiceClient();
+    if (!supabase) {
+      res.status(500).json({ items: [] });
+      return;
+    }
+    const { data, error } = await supabase.rpc('query', { query: "SELECT DISTINCT state FROM colleges ORDER BY state ASC" });
+    if (error) {
+      // Fallback if RPC doesn't exist
+      const { data: rawData, error: err2 } = await supabase.from('colleges').select('state');
+      if (err2) throw err2;
+      const states = Array.from(new Set(rawData.map(r => r.state))).filter(Boolean).sort();
+      res.status(200).json({ items: states });
+      return;
+    }
+    res.status(200).json({ items: data.map((d: any) => d.state) });
+  } catch (error) {
+    next(error);
+  }
+});
+
 collegesRouter.get("/api/v1/colleges", async (req, res, next): Promise<void> => {
   try {
     const supabase = createSupabaseServiceClient();
@@ -99,7 +148,13 @@ collegesRouter.get("/api/v1/colleges", async (req, res, next): Promise<void> => 
       res.status(200).json({ items: [] });
       return;
     }
-    const { data, error } = await supabase.from('colleges').select('*').limit(50);
+    
+    let query = supabase.from('colleges').select('id, name, city, state');
+    if (req.query.state) {
+      query = query.eq('state', req.query.state);
+    }
+    
+    const { data, error } = await query.limit(500);
     if (error) throw error;
     res.status(200).json({ items: data });
   } catch (error) {
