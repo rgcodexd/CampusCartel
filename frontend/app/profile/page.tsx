@@ -78,13 +78,13 @@ export default function ProfilePage() {
 
     try {
       const { error: uploadError } = await supabase.storage.from('verifications').upload(filePath, file);
-      if (uploadError) throw uploadError;
+      if (uploadError) throw new Error("Upload failed: " + uploadError.message);
       
       const { data } = supabase.storage.from('verifications').getPublicUrl(filePath);
       return data.publicUrl;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error uploading file:", error);
-      return null;
+      throw error;
     } finally {
       setUploading(false);
     }

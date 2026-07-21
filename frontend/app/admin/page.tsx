@@ -9,6 +9,7 @@ export default function AdminPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [token, setToken] = useState("");
+  const [currentUserId, setCurrentUserId] = useState("");
 
   useEffect(() => {
     checkAdmin();
@@ -25,6 +26,7 @@ export default function AdminPage() {
     if (data && data.role === "admin") {
       setIsAdmin(true);
       setToken(session.access_token);
+      setCurrentUserId(session.user.id);
     }
     setLoading(false);
   };
@@ -84,7 +86,7 @@ export default function AdminPage() {
         <div className="max-w-6xl mx-auto">
           {activeTab === "overview" && <OverviewTab token={token} />}
           {activeTab === "verifications" && <VerificationsTab token={token} />}
-          {activeTab === "users" && <UsersTab token={token} />}
+          {activeTab === "users" && <UsersTab token={token} currentUserId={currentUserId} />}
           {activeTab === "listings" && <ListingsTab token={token} />}
           {activeTab === "reports" && <ReportsTab token={token} />}
         </div>
@@ -192,7 +194,7 @@ function VerificationsTab({ token }: { token: string }) {
   );
 }
 
-function UsersTab({ token }: { token: string }) {
+function UsersTab({ token, currentUserId }: { token: string, currentUserId: string }) {
   const [users, setUsers] = useState<any[]>([]);
 
   useEffect(() => {
@@ -238,15 +240,34 @@ function UsersTab({ token }: { token: string }) {
                   <span className={`inline-block px-2 py-1 rounded text-xs font-bold mr-2 ${u.role === 'admin' ? 'bg-purple-500/10 text-purple-500' : 'bg-zinc-200 dark:bg-zinc-800'}`}>
                     {u.role.toUpperCase()}
                   </span>
-                  <span className={`inline-block px-2 py-1 rounded text-xs font-bold ${u.verification_status === 'approved' ? 'bg-green-500/10 text-green-500' : u.verification_status === 'pending' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-red-500/10 text-red-500'}`}>
-                    {u.verification_status.toUpperCase()}
-                  </span>
+                  {u.verification_status === 'approved' && (
+                    <span className="inline-block px-2 py-1 rounded text-xs font-bold bg-green-500/10 text-green-500">
+                      APPROVED
+                    </span>
+                  )}
+                  {u.verification_status === 'rejected' && (
+                    <span className="inline-block px-2 py-1 rounded text-xs font-bold bg-red-500/10 text-red-500">
+                      REJECTED
+                    </span>
+                  )}
+                  {u.verification_status === 'pending' && u.verification_image_url && (
+                    <span className="inline-block px-2 py-1 rounded text-xs font-bold bg-yellow-500/10 text-yellow-500" title="User uploaded ID, ready for review">
+                      PENDING (REVIEW)
+                    </span>
+                  )}
+                  {u.verification_status === 'pending' && !u.verification_image_url && (
+                    <span className="inline-block px-2 py-1 rounded text-xs font-bold bg-zinc-500/10 text-zinc-500" title="User has not uploaded an ID yet">
+                      PENDING (NO ID)
+                    </span>
+                  )}
                 </td>
                 <td className="p-4 font-medium">{u.trust_score} / 5.0</td>
                 <td className="p-4 text-right">
-                  <button onClick={() => handleDelete(u.id)} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition" title="Delete User">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {u.id !== currentUserId && (
+                    <button onClick={() => handleDelete(u.id)} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition" title="Delete User">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

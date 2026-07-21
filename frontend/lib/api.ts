@@ -8,6 +8,8 @@ const rawListingSchema = z.object({
   college: z.string(),
   distance_km: z.number().nullable().optional(),
   owner_student_id: z.string().optional(),
+  description: z.string().nullable().optional(),
+  image_url: z.string().nullable().optional(),
 });
 
 const responseSchema = z.object({
@@ -48,6 +50,8 @@ export async function fetchListings(
     college: r.college,
     distanceKm: r.distance_km ?? 0,
     ownerStudentId: r.owner_student_id ?? null,
+    description: r.description ?? null,
+    imageUrl: r.image_url ?? null,
   }));
 }
 
@@ -58,6 +62,8 @@ export type CreateListingPayload = {
   priceLabel: string;
   college: string;
   distanceKm: number;
+  description?: string;
+  imageUrl?: string;
 };
 
 export async function createListing(payload: CreateListingPayload, studentId: string, studentEmail: string) {
