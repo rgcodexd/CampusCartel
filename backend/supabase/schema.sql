@@ -41,6 +41,8 @@ create table if not exists public.listings (
   distance_km numeric(5,2) not null default 0,
   owner_student_id uuid references public.profiles(id) on delete cascade not null,
   status text not null default 'Available',
+  description text,
+  image_url text,
   created_at timestamptz default now() not null
 );
 

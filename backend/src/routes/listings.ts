@@ -20,6 +20,8 @@ const createListingSchema = z.object({
   priceLabel: z.string().min(2),
   college: z.string().min(2),
   distanceKm: z.number().min(0),
+  description: z.string().optional(),
+  imageUrl: z.string().url().optional(),
 });
 
 export const listingsRouter = Router();
@@ -104,6 +106,8 @@ listingsRouter.post("/api/v1/listings", requireStudentVerification, async (req, 
         college: payload.college,
         price_label: payload.priceLabel,
         distance_km: payload.distanceKm,
+        description: payload.description || null,
+        image_url: payload.imageUrl || null,
         owner_student_id: ownerStudentId,
       })
       .select()

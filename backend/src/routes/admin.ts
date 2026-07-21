@@ -78,7 +78,7 @@ adminRouter.get("/api/v1/admin/users", async (req: any, res: any, next: any) => 
   try {
     const svc = req.supabase;
     const { data, error } = await svc.from("profiles")
-      .select("id, email, full_name, role, trust_score, is_verified, verification_status, created_at, student_id")
+      .select("id, email, full_name, role, trust_score, is_verified, verification_status, created_at, student_id, verification_image_url")
       .order("created_at", { ascending: false });
       
     if (error) throw error;
@@ -92,9 +92,14 @@ adminRouter.get("/api/v1/admin/users", async (req: any, res: any, next: any) => 
 adminRouter.delete("/api/v1/admin/users/:id", async (req: any, res: any, next: any) => {
   try {
     const svc = req.supabase;
+    const targetUserId = req.params.id;
+
+    if (req.adminUser.id === targetUserId) {
+      return res.status(400).json({ error: "You cannot delete your own admin account." });
+    }
     
     // Delete from auth.users (this will cascade to profiles if properly set up, but we'll manually delete if needed)
-    const { error: authError } = await svc.auth.admin.deleteUser(req.params.id);
+    const { error: authError } = await svc.auth.admin.deleteUser(targetUserId);
     
     // We also delete the profile directly just in case cascade is not set
     const { error: profileError } = await svc.from("profiles").delete().eq("id", req.params.id);
