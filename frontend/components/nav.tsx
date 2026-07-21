@@ -3,11 +3,12 @@ import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { Session } from "@supabase/supabase-js";
-import { GraduationCap, MapPin, Moon, Sun, ChevronDown, User, LogOut, Settings, LayoutDashboard, Search } from "lucide-react";
+import { GraduationCap, MapPin, Moon, Sun, ChevronDown, User, LogOut, Settings, LayoutDashboard, Search, ShieldCheck } from "lucide-react";
 import { TrustBadge } from "./trust-badge";
 
 export function Nav() {
   const [session, setSession] = useState<Session | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isDark, setIsDark] = useState(false);
   
   // UI States for Popovers
@@ -17,6 +18,9 @@ export function Nav() {
   // Location State
   const [radius, setRadius] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [selectedCollege, setSelectedCollege] = useState<{id: string, name: string} | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   const locationRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -24,11 +28,19 @@ export function Nav() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      if (session) checkAdminStatus(session.user.id);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session) checkAdminStatus(session.user.id);
+      else setIsAdmin(false);
     });
+
+    const checkAdminStatus = async (userId: string) => {
+      const { data } = await supabase.from('profiles').select('role').eq('id', userId).single();
+      setIsAdmin(data?.role === 'admin');
+    };
 
     // Handle click outside to close popovers
     const handleClickOutside = (event: MouseEvent) => {
@@ -47,6 +59,29 @@ export function Nav() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    const fetchColleges = async () => {
+      if (searchQuery.length < 2) {
+        setSearchResults([]);
+        return;
+      }
+      setIsSearching(true);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/colleges/search?q=${encodeURIComponent(searchQuery)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSearchResults(data.items || []);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+      setIsSearching(false);
+    };
+
+    const debounce = setTimeout(fetchColleges, 300);
+    return () => clearTimeout(debounce);
+  }, [searchQuery]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -77,7 +112,11 @@ export function Nav() {
           <Link href="/" className="text-foreground hover:text-primary transition-colors">Home</Link>
           <Link href="/marketplace" className="text-zinc-500 hover:text-primary transition-colors">Marketplace</Link>
           <Link href="/chats" className="text-zinc-500 hover:text-primary transition-colors">My Chats</Link>
+          <Link href="/map" className="text-zinc-500 hover:text-primary transition-colors">Map</Link>
           <Link href="/dashboard" className="text-zinc-500 hover:text-primary transition-colors">Dashboard</Link>
+          {isAdmin && (
+            <Link href="/admin" className="text-purple-500 hover:text-purple-600 font-bold transition-colors">Admin</Link>
+          )}
         </div>
 
         {/* Right actions */}
@@ -90,13 +129,13 @@ export function Nav() {
               className={`flex items-center gap-1.5 bg-white dark:bg-zinc-900 border rounded-full px-3.5 py-1.5 text-sm cursor-pointer transition-all ${isLocationOpen ? 'ring-2 ring-primary/50 border-primary shadow-md' : 'hover:bg-zinc-50 dark:hover:bg-zinc-800'}`}
             >
               <MapPin className="h-3.5 w-3.5 text-primary" />
-              <span className="font-semibold text-foreground text-xs">Delhi University</span>
+              <span className="font-semibold text-foreground text-xs truncate max-w-[120px]">{selectedCollege ? selectedCollege.name : 'Select Campus'}</span>
               <ChevronDown className={`h-3 w-3 text-zinc-400 transition-transform ${isLocationOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isLocationOpen && (
               <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-4 animate-in fade-in slide-in-from-top-2 duration-200 z-50">
-                <div className="mb-4">
+                <div className="mb-4 relative">
                   <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2 block">Select College</label>
                   <div className="flex items-center bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2">
                     <Search className="h-4 w-4 text-zinc-400 mr-2" />
@@ -108,6 +147,27 @@ export function Nav() {
                       className="bg-transparent border-none outline-none text-sm w-full text-foreground"
                     />
                   </div>
+                  
+                  {searchResults.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg z-50">
+                      {searchResults.map((college) => (
+                        <div 
+                          key={college.id} 
+                          className="px-3 py-2 text-sm text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+                          onClick={() => {
+                            setSelectedCollege({ id: college.id, name: college.name });
+                            setSearchQuery("");
+                            setSearchResults([]);
+                            setIsLocationOpen(false);
+                          }}
+                        >
+                          <div className="font-semibold truncate">{college.name}</div>
+                          <div className="text-[10px] text-zinc-500 truncate">{college.city}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {isSearching && <div className="absolute top-full left-0 right-0 mt-1 px-3 py-2 text-xs text-zinc-500 bg-white dark:bg-zinc-900 border rounded-xl shadow-lg">Searching...</div>}
                 </div>
                 <div>
                   <div className="flex justify-between items-center mb-2">
@@ -163,6 +223,13 @@ export function Nav() {
                       <Link href="/dashboard" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl transition-colors">
                         <LayoutDashboard className="h-4 w-4" /> Dashboard
                       </Link>
+                      
+                      {isAdmin && (
+                        <Link href="/admin" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-500/10 rounded-xl transition-colors">
+                          <ShieldCheck className="h-4 w-4" /> Admin Portal
+                        </Link>
+                      )}
+
                       <Link href="/profile" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-3 px-3 py-2 text-sm font-semibold text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl transition-colors">
                         <User className="h-4 w-4" /> My Profile
                       </Link>

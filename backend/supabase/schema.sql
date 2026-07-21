@@ -12,12 +12,22 @@ create table if not exists public.colleges (
   created_at timestamptz default now() not null
 );
 
+create type user_role as enum ('user', 'admin');
+
 create table if not exists public.profiles (
   id uuid primary key,
   email text,
+  full_name text,
+  phone text,
+  college text,
+  college_email text,
+  student_id text,
   trust_score numeric(3,2) default 5.00,
   is_verified boolean default false,
   college_id text references public.colleges(id),
+  role user_role default 'user',
+  verification_image_url text,
+  verification_status text default 'pending' check (verification_status in ('pending', 'approved', 'rejected')),
   created_at timestamptz default now() not null
 );
 
@@ -144,3 +154,20 @@ create policy "Users can insert ratings." on public.user_ratings for insert with
 -- Reports RLS
 create policy "Users can view their own reports." on public.reports for select using ( auth.uid() = reporter_id );
 create policy "Users can insert reports." on public.reports for insert with check ( auth.uid() = reporter_id );
+
+-- Auto-create profile on signup
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  insert into public.profiles (id, email)
+  values (new.id, new.email);
+  return new;
+end;
+$$;
+
+create or replace trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();

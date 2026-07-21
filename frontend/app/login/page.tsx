@@ -4,26 +4,40 @@ import { useState } from "react";
 import { supabase } from "../../lib/supabase";
 
 export default function LoginPage() {
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/`,
-      },
-    });
-
-    if (error) {
-      setMessage(`Error: ${error.message}`);
+    if (isSignUp) {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        },
+      });
+      if (error) {
+        setMessage(`Error: ${error.message}`);
+      } else {
+        setMessage("Signup successful! Please check your email to verify your account.");
+      }
     } else {
-      setMessage("Check your email for the login link!");
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) {
+        setMessage(`Error: ${error.message}`);
+      } else {
+        window.location.href = "/";
+      }
     }
     setLoading(false);
   };
@@ -48,11 +62,17 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto max-w-md px-4 pt-20">
-      <div className="card-surface rounded-3xl p-8 border">
-        <h1 className="font-[var(--font-heading)] text-3xl text-foreground mb-2">Welcome Back</h1>
-        <p className="text-muted-foreground mb-6 text-sm">Enter your college email to sign in or create an account.</p>
+      <div className="card-surface rounded-3xl p-8 border shadow-xl shadow-primary/5">
+        <h1 className="font-[var(--font-heading)] text-3xl text-foreground mb-2">
+          {isSignUp ? "Create an Account" : "Welcome Back"}
+        </h1>
+        <p className="text-muted-foreground mb-6 text-sm">
+          {isSignUp 
+            ? "Sign up with your college email and password." 
+            : "Sign in with your email and password."}
+        </p>
         
-        <form onSubmit={handleLogin} className="flex flex-col gap-4">
+        <form onSubmit={handleAuth} className="flex flex-col gap-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
               College Email
@@ -67,15 +87,41 @@ export default function LoginPage() {
               className="w-full bg-background border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full bg-background border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </div>
+          
           <button
             type="submit"
             disabled={loading}
             className="w-full bg-primary text-primary-foreground font-semibold rounded-xl px-4 py-3 hover:bg-primary/90 transition disabled:opacity-50 mt-2 shadow-soft"
           >
-            {loading ? "Sending link..." : "Send Magic Link"}
+            {loading ? "Processing..." : isSignUp ? "Sign Up with Email" : "Sign In with Email"}
           </button>
         </form>
-        <div className="mt-4">
+
+        <div className="mt-4 text-center">
+          <button
+            type="button"
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="text-sm text-primary hover:underline"
+          >
+            {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
+          </button>
+        </div>
+
+        <div className="mt-2">
           <div className="relative my-6 flex items-center">
             <div className="flex-grow h-px bg-border" />
             <span className="px-3 text-sm text-muted-foreground">or</span>

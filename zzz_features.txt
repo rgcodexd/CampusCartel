@@ -1,0 +1,2 @@
+#detail page for product 
+#chat feature

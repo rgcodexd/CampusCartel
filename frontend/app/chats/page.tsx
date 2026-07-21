@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createBrowserClient } from "@supabase/ssr";
+import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { MessageSquare, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -12,10 +12,7 @@ export default function ChatsPage() {
   const router = useRouter();
   const [session, setSession] = useState<any>(null);
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+
 
   useEffect(() => {
     const init = async () => {

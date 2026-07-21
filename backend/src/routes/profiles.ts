@@ -47,3 +47,94 @@ profilesRouter.post("/api/v1/profiles/auto-verify", async (req, res, next) => {
     next(err);
   }
 });
+
+profilesRouter.get("/api/v1/profiles/pending-verification", async (req, res, next): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      res.status(401).json({ error: "Missing authorization header" });
+      return;
+    }
+
+    const svc = createSupabaseServiceClient();
+    if (!svc) {
+      res.status(500).json({ error: "Supabase service client not configured" });
+      return;
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await svc.auth.getUser(token);
+    
+    if (authError || !user) {
+      res.status(401).json({ error: "Invalid token" });
+      return;
+    }
+
+    const { data: adminProfile } = await svc.from("profiles").select("role").eq("id", user.id).single();
+    if (!adminProfile || adminProfile.role !== 'admin') {
+      res.status(403).json({ error: "Forbidden: Admins only" });
+      return;
+    }
+
+    const { data: pending, error } = await svc
+      .from("profiles")
+      .select("*")
+      .eq("verification_status", "pending")
+      .not("verification_image_url", "is", null);
+
+    if (error) throw error;
+    res.status(200).json({ items: pending });
+  } catch (err) {
+    next(err);
+  }
+});
+
+profilesRouter.post("/api/v1/profiles/verify/:id", async (req, res, next): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      res.status(401).json({ error: "Missing authorization header" });
+      return;
+    }
+
+    const svc = createSupabaseServiceClient();
+    if (!svc) {
+      res.status(500).json({ error: "Supabase service client not configured" });
+      return;
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await svc.auth.getUser(token);
+    
+    if (authError || !user) {
+      res.status(401).json({ error: "Invalid token" });
+      return;
+    }
+
+    const { data: adminProfile } = await svc.from("profiles").select("role").eq("id", user.id).single();
+    if (!adminProfile || adminProfile.role !== 'admin') {
+      res.status(403).json({ error: "Forbidden: Admins only" });
+      return;
+    }
+
+    const profileId = req.params.id;
+    const { status } = req.body; // 'approved' or 'rejected'
+    
+    if (status !== 'approved' && status !== 'rejected') {
+      res.status(400).json({ error: "Invalid status" });
+      return;
+    }
+
+    const updateData: any = { verification_status: status };
+    if (status === 'approved') {
+      updateData.is_verified = true;
+    }
+
+    const { data, error } = await svc.from("profiles").update(updateData).eq("id", profileId).select().single();
+    if (error) throw error;
+
+    res.status(200).json({ success: true, profile: data });
+  } catch (err) {
+    next(err);
+  }
+});
