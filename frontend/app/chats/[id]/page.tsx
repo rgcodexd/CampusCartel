@@ -34,7 +34,7 @@ export default function ChatDetailPage() {
       }
 
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/chats/${params.id}`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/chats/${params.id}`, {
           headers: {
             "Authorization": `Bearer ${session.access_token}`
           }
@@ -53,7 +53,7 @@ export default function ChatDetailPage() {
         setLoading(false);
       }
 
-      currentSocket = io(process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000", {
+      currentSocket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000", {
         auth: { token: session.access_token }
       });
 

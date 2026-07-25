@@ -1,5 +1,5 @@
 import { Server, Socket } from "socket.io";
-import { db } from "../config/firebase.js";
+import { getDb } from "../config/firebase.js";
 import { encrypt } from "../utils/encryption.js";
 import { createSupabaseServiceClient } from "../config/supabase.js";
 import { randomUUID } from "crypto";
@@ -32,7 +32,7 @@ export function registerChatHandlers(io: Server) {
 
     socket.on("join_chat", async (chatId: string) => {
       try {
-        const chatDoc = await db.collection("chats").doc(chatId).get();
+        const chatDoc = await getDb().collection("chats").doc(chatId).get();
         if (chatDoc.exists) {
           const chatData = chatDoc.data();
           if (chatData && (chatData.buyer_id === userId || chatData.seller_id === userId)) {
@@ -50,7 +50,7 @@ export function registerChatHandlers(io: Server) {
       if (!chat_id || !message_text) return;
 
       try {
-        const chatDoc = await db.collection("chats").doc(chat_id).get();
+        const chatDoc = await getDb().collection("chats").doc(chat_id).get();
         if (!chatDoc.exists) return;
         const chatData = chatDoc.data();
         if (!chatData || (chatData.buyer_id !== userId && chatData.seller_id !== userId)) return;
@@ -68,9 +68,9 @@ export function registerChatHandlers(io: Server) {
           created_at: createdAt
         };
 
-        await db.collection("chats").doc(chat_id).collection("messages").doc(messageId).set(msgData);
+        await getDb().collection("chats").doc(chat_id).collection("messages").doc(messageId).set(msgData);
 
-        await db.collection("chats").doc(chat_id).update({
+        await getDb().collection("chats").doc(chat_id).update({
           updated_at: createdAt
         });
 

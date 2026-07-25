@@ -11,4 +11,11 @@ try {
   console.error("Firebase admin initialization error", error);
 }
 
-export const db = getFirestore();
+let firestoreDb: FirebaseFirestore.Firestore | null = null;
+
+export const getDb = () => {
+  if (!firestoreDb) {
+    firestoreDb = getFirestore();
+  }
+  return firestoreDb;
+};

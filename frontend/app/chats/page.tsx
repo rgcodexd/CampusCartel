@@ -23,17 +23,22 @@ export default function ChatsPage() {
         return;
       }
       
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/chats`, {
-        headers: {
-          "Authorization": `Bearer ${session.access_token}`
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/chats`, {
+          headers: {
+            "Authorization": `Bearer ${session.access_token}`
+          }
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          setChats(data.items || []);
         }
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        setChats(data.items || []);
+      } catch (err) {
+        console.warn("Failed to fetch chats:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     
     init();
@@ -49,7 +54,7 @@ export default function ChatsPage() {
         <div className="text-center p-12 bg-zinc-50 dark:bg-zinc-900 rounded-3xl border border-dashed border-zinc-300 dark:border-zinc-700">
           <MessageSquare className="h-12 w-12 mx-auto text-zinc-300 dark:text-zinc-600 mb-4" />
           <p className="text-zinc-500 font-medium text-lg">No messages yet. Start a conversation on a listing!</p>
-          <Link href="/browse" className="inline-block mt-4 px-6 py-3 bg-primary text-white rounded-full font-bold hover:scale-105 transition-all shadow-lg">
+          <Link href="/marketplace" className="inline-block mt-4 px-6 py-3 bg-primary text-white rounded-full font-bold hover:scale-105 transition-all shadow-lg">
             Browse Listings
           </Link>
         </div>

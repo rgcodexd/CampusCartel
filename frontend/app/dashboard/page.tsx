@@ -32,7 +32,7 @@ const myListings: MyListing[] = [];
 
 const quickActions = [
   { label: "Post a New Listing", icon: Plus, href: "/create", primary: true },
-  { label: "Browse Items", icon: Search, href: "/browse" },
+  { label: "Marketplace", icon: Search, href: "/marketplace" },
 ];
 
 export default function DashboardPage() {
@@ -127,7 +127,7 @@ export default function DashboardPage() {
             <div className="lg:col-span-2">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-[var(--font-heading)] text-lg font-bold text-foreground">My Active Listings</h2>
-                <Link href="/browse" className="text-xs text-primary font-semibold hover:underline">View all</Link>
+                <Link href="/marketplace" className="text-xs text-primary font-semibold hover:underline">View all</Link>
               </div>
               <div className="space-y-4">
                 {(listings.length ? listings : myListings).length === 0 ? (

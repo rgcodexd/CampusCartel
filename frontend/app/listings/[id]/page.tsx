@@ -32,7 +32,7 @@ export default function ListingDetailPage() {
             id,
             email,
             trust_score,
-            college:colleges!college_id(name)
+            college
           )
         `)
         .eq("id", params.id)
@@ -63,7 +63,7 @@ export default function ListingDetailPage() {
     }
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/chats`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/chats`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
