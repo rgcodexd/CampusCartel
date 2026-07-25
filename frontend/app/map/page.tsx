@@ -23,10 +23,10 @@ export default function MapPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/colleges/states`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/colleges/states`)
       .then(res => res.json())
       .then(data => setStates(data.items || []))
-      .catch(console.error);
+      .catch(err => console.warn("Failed to fetch states:", err));
       
     // Fetch initial batch of colleges that have coordinates
     fetchColleges("");
@@ -36,8 +36,8 @@ export default function MapPage() {
     setLoading(true);
     try {
       const url = stateParam 
-        ? `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/colleges?state=${encodeURIComponent(stateParam)}`
-        : `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/colleges`;
+        ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/colleges?state=${encodeURIComponent(stateParam)}`
+        : `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/colleges`;
         
       const res = await fetch(url);
       if (res.ok) {
@@ -46,7 +46,7 @@ export default function MapPage() {
         setColleges(data.items.filter((c: any) => c.lat !== 0 && c.lng !== 0) || []);
       }
     } catch (err) {
-      console.error(err);
+      console.warn("Failed to fetch colleges:", err);
     } finally {
       setLoading(false);
     }

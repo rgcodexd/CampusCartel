@@ -25,7 +25,9 @@ const logger = pinoHttp({
 export function createApp() {
   const app = express();
 
-  app.use(helmet());
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+  }));
   app.use(cors({ origin: env.CORS_ORIGIN }));
   app.use(express.json({ limit: "1mb" }));
   app.use(requestIdMiddleware);

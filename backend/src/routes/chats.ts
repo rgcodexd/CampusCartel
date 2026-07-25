@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { requireAuth } from "../middleware/auth.js";
-import { db } from "../config/firebase.js";
+import { getDb } from "../config/firebase.js";
 import { encrypt, decrypt } from "../utils/encryption.js";
 import { createSupabaseServiceClient } from "../config/supabase.js";
 import { randomUUID } from "crypto";
@@ -30,7 +30,7 @@ chatsRouter.post("/api/v1/chats", requireAuth, async (req, res, next): Promise<v
       return;
     }
 
-    const chatsRef = db.collection("chats");
+    const chatsRef = getDb().collection("chats");
     const snapshot = await chatsRef
       .where("buyer_id", "==", buyer_id)
       .where("seller_id", "==", seller_id)
@@ -76,7 +76,7 @@ chatsRouter.get("/api/v1/chats", requireAuth, async (req, res, next): Promise<vo
   try {
     const userId = (req as any).user.id;
 
-    const chatsRef = db.collection("chats");
+    const chatsRef = getDb().collection("chats");
     const buyerQuery = chatsRef.where("buyer_id", "==", userId).get();
     const sellerQuery = chatsRef.where("seller_id", "==", userId).get();
 
@@ -113,7 +113,7 @@ chatsRouter.get("/api/v1/chats", requireAuth, async (req, res, next): Promise<vo
         .eq("id", chat.seller_id)
         .single();
 
-      const messagesSnapshot = await db.collection("chats")
+      const messagesSnapshot = await getDb().collection("chats")
         .doc(chat.id)
         .collection("messages")
         .orderBy("created_at", "desc")
@@ -150,7 +150,7 @@ chatsRouter.get("/api/v1/chats/:id", requireAuth, async (req, res, next): Promis
     const userId = (req as any).user.id;
     const chatId = req.params.id;
 
-    const chatDoc = await db.collection("chats").doc(chatId).get();
+    const chatDoc = await getDb().collection("chats").doc(chatId).get();
     if (!chatDoc.exists) {
       res.status(404).json({ error: "Chat not found" });
       return;
@@ -186,7 +186,7 @@ chatsRouter.get("/api/v1/chats/:id", requireAuth, async (req, res, next): Promis
       .eq("id", chatData.seller_id)
       .single();
 
-    const messagesSnapshot = await db.collection("chats")
+    const messagesSnapshot = await getDb().collection("chats")
       .doc(chatId)
       .collection("messages")
       .orderBy("created_at", "asc")

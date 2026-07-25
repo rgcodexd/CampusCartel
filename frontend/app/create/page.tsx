@@ -75,7 +75,7 @@ export default function CreateListingPage() {
       }
       setIsSearching(true);
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/colleges/search?q=${encodeURIComponent(searchQuery)}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/colleges/search?q=${encodeURIComponent(searchQuery)}`);
         if (res.ok) {
           const data = await res.json();
           setSearchResults(data.items || []);

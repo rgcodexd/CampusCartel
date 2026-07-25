@@ -103,9 +103,9 @@ function OverviewTab({ token }: { token: string }) {
   const [metrics, setMetrics] = useState<any>(null);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/admin/metrics`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/admin/metrics`, {
       headers: { Authorization: `Bearer ${token}` }
-    }).then(r => r.json()).then(d => setMetrics(d.metrics)).catch(console.error);
+    }).then(r => r.json()).then(d => setMetrics(d.metrics)).catch(err => console.warn("Failed to fetch:", err));
   }, [token]);
 
   return (
@@ -140,14 +140,14 @@ function VerificationsTab({ token }: { token: string }) {
   const [pendingUsers, setPendingUsers] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/profiles/pending-verification`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/profiles/pending-verification`, {
       headers: { Authorization: `Bearer ${token}` }
-    }).then(r => r.json()).then(d => setPendingUsers(d.items || [])).catch(console.error);
+    }).then(r => r.json()).then(d => setPendingUsers(d.items || [])).catch(err => console.warn("Failed to fetch:", err));
   }, [token]);
 
   const handleVerify = async (profileId: string, status: "approved" | "rejected") => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/profiles/verify/${profileId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/profiles/verify/${profileId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ status })
@@ -198,15 +198,15 @@ function UsersTab({ token, currentUserId }: { token: string, currentUserId: stri
   const [users, setUsers] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/admin/users`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/admin/users`, {
       headers: { Authorization: `Bearer ${token}` }
-    }).then(r => r.json()).then(d => setUsers(d.users || [])).catch(console.error);
+    }).then(r => r.json()).then(d => setUsers(d.users || [])).catch(err => console.warn("Failed to fetch:", err));
   }, [token]);
 
   const handleDelete = async (id: string) => {
     if(!confirm("Are you sure you want to delete this user? This cannot be undone.")) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/admin/users/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/admin/users/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -282,15 +282,15 @@ function ListingsTab({ token }: { token: string }) {
   const [listings, setListings] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/admin/listings`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/admin/listings`, {
       headers: { Authorization: `Bearer ${token}` }
-    }).then(r => r.json()).then(d => setListings(d.listings || [])).catch(console.error);
+    }).then(r => r.json()).then(d => setListings(d.listings || [])).catch(err => console.warn("Failed to fetch:", err));
   }, [token]);
 
   const handleDelete = async (id: string) => {
     if(!confirm("Delete this listing?")) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/admin/listings/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/admin/listings/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -350,14 +350,14 @@ function ReportsTab({ token }: { token: string }) {
   const [reports, setReports] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/admin/reports`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/admin/reports`, {
       headers: { Authorization: `Bearer ${token}` }
-    }).then(r => r.json()).then(d => setReports(d.reports || [])).catch(console.error);
+    }).then(r => r.json()).then(d => setReports(d.reports || [])).catch(err => console.warn("Failed to fetch:", err));
   }, [token]);
 
   const handleResolve = async (id: string) => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/admin/reports/${id}/resolve`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/admin/reports/${id}/resolve`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` }
       });

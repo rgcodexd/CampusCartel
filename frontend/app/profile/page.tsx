@@ -43,7 +43,7 @@ export default function ProfilePage() {
       }
     });
 
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/colleges/states`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/colleges/states`)
       .then((r) => r.json())
       .then((j) => setStates(j.items || []))
       .catch(() => {});
@@ -56,7 +56,7 @@ export default function ProfilePage() {
       setColleges([]);
       return;
     }
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/colleges?state=${encodeURIComponent(stateName)}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000"}/api/v1/colleges?state=${encodeURIComponent(stateName)}`)
       .then((r) => r.json())
       .then((j) => setColleges(j.items || []))
       .catch(() => {});

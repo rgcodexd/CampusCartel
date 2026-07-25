@@ -7,50 +7,17 @@ import {
   MessageCircle, Star, Calendar, Zap, Lock, ChevronRight, X 
 } from "lucide-react";
 
-/* ─── Mock Data ─── */
+import { fetchListings } from "../lib/api";
+import { Laptop, BookOpen, Coffee, Car, Sofa, Package, ChevronDown } from "lucide-react";
 
-const MOCK_LISTINGS = [
-  {
-    id: "1",
-    title: "Sony WH-1000XM5 Headphones",
-    category: "Electronics",
-    rentPrice: "₹149",
-    buyPrice: "₹19,999",
-    seller: { name: "Aarav M.", trustScore: 4.9, trades: 42 },
-    location: { campus: "IIT Delhi", distance: "1.2km" },
-    image: "https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&q=80&w=600",
-  },
-  {
-    id: "2",
-    title: "Engineering Drawing Kit (Complete)",
-    category: "Academics",
-    rentPrice: "₹49",
-    buyPrice: "₹499",
-    seller: { name: "Priya S.", trustScore: 4.7, trades: 18 },
-    location: { campus: "NIT Delhi", distance: "3.4km" },
-    image: "https://images.unsplash.com/photo-1628126235206-5260b9ea6441?auto=format&fit=crop&q=80&w=600",
-  },
-  {
-    id: "3",
-    title: "MacBook Air M2 (Midnight)",
-    category: "Laptops",
-    rentPrice: "₹799",
-    buyPrice: "₹82,000",
-    seller: { name: "Rohan D.", trustScore: 5.0, trades: 104 },
-    location: { campus: "DTU", distance: "5.1km" },
-    image: "https://images.unsplash.com/photo-1664478546384-d57ffe74a78c?auto=format&fit=crop&q=80&w=600",
-  },
-  {
-    id: "4",
-    title: "Mini Refrigerator (45L)",
-    category: "Appliances",
-    rentPrice: "₹299",
-    buyPrice: "₹4,500",
-    seller: { name: "Neha K.", trustScore: 4.6, trades: 9 },
-    location: { campus: "IIIT Delhi", distance: "2.8km" },
-    image: "https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?auto=format&fit=crop&q=80&w=600",
-  },
-];
+const CATEGORY_ICONS: Record<string, React.ElementType> = {
+  "Electronics": Laptop,
+  "Academics": BookOpen,
+  "Appliances": Coffee,
+  "Vehicles": Car,
+  "Furniture": Sofa,
+  "Miscellaneous": Package
+};
 
 const CLUSTER_CAMPUSES = [
   { name: "IIT Delhi", dist: 0, active: 412, coords: { x: 50, y: 50 } },
@@ -60,93 +27,10 @@ const CLUSTER_CAMPUSES = [
   { name: "NIFT", dist: 2.1, active: 203, coords: { x: 80, y: 65 } },
 ];
 
-/* ─── Components ─── */
-
 function BentoCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={`relative overflow-hidden rounded-3xl border bg-white dark:bg-zinc-900 shadow-sm transition-all hover:shadow-lg ${className}`}>
       {children}
-    </div>
-  );
-}
-
-function ProductCard({ item }: { item: typeof MOCK_LISTINGS[0] }) {
-  const [mode, setMode] = useState<"rent" | "buy">("rent");
-
-  return (
-    <div className="group flex flex-col bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 overflow-hidden hover:border-primary/50 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/10">
-      {/* Image Container */}
-      <div className="relative h-56 w-full bg-zinc-100 dark:bg-zinc-800/50 overflow-hidden">
-        <img 
-          src={item.image} 
-          alt={item.title} 
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-        />
-        {/* Toggle Overlay */}
-        <div className="absolute top-4 right-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md p-1 rounded-full flex items-center border border-zinc-200 dark:border-zinc-800 shadow-sm">
-          <button 
-            onClick={(e) => { e.preventDefault(); setMode("rent"); }}
-            className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all ${mode === "rent" ? "bg-primary text-white" : "text-zinc-500 hover:text-foreground"}`}
-          >
-            RENT
-          </button>
-          <button 
-            onClick={(e) => { e.preventDefault(); setMode("buy"); }}
-            className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all ${mode === "buy" ? "bg-emerald-500 text-white" : "text-zinc-500 hover:text-foreground"}`}
-          >
-            BUY
-          </button>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-5 flex flex-col flex-grow">
-        <div className="flex items-center gap-1.5 text-xs font-semibold text-primary mb-2">
-          <MapPin className="h-3.5 w-3.5" />
-          {item.location.campus} <span className="text-zinc-400 font-normal">• {item.location.distance}</span>
-        </div>
-        
-        <h3 className="font-bold text-lg text-foreground line-clamp-1 mb-4 group-hover:text-primary transition-colors">
-          {item.title}
-        </h3>
-        
-        {/* Dynamic Pricing Zone */}
-        <div className="mt-auto flex items-end justify-between">
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase tracking-wider text-zinc-400 font-bold mb-0.5">
-              {mode === "rent" ? "Rental Rate" : "Asking Price"}
-            </span>
-            <div className="flex items-baseline gap-1.5 transition-all duration-300">
-              <span className="text-2xl font-extrabold text-foreground tracking-tight">
-                {mode === "rent" ? item.rentPrice : item.buyPrice}
-              </span>
-              <span className="text-xs font-medium text-zinc-500">
-                {mode === "rent" ? "/ day" : "fixed price"}
-              </span>
-            </div>
-          </div>
-
-          {/* Action Icon */}
-          <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-all duration-300 ${mode === "rent" ? "bg-primary/10 text-primary" : "bg-emerald-500/10 text-emerald-600"}`}>
-            {mode === "rent" ? <Calendar className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
-          </div>
-        </div>
-      </div>
-
-      {/* Trust Footer */}
-      <div className="px-5 py-3 border-t border-zinc-100 dark:border-zinc-800/50 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center text-[10px] font-bold text-white">
-            {item.seller.name.charAt(0)}
-          </div>
-          <span className="text-xs font-medium text-foreground">{item.seller.name}</span>
-        </div>
-        <div className="flex items-center gap-1 bg-amber-100/50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-500 px-2 py-0.5 rounded-full">
-          <Star className="h-3 w-3 fill-current" />
-          <span className="text-[10px] font-bold">{item.seller.trustScore}</span>
-          <span className="text-[10px] opacity-70">({item.seller.trades})</span>
-        </div>
-      </div>
     </div>
   );
 }
@@ -157,6 +41,13 @@ export default function PremiumHomePage() {
   const [globalMode, setGlobalMode] = useState<"rent" | "buy">("rent");
   const [radius, setRadius] = useState(5);
   const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [recentListings, setRecentListings] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    fetchListings("all")
+      .then(data => setRecentListings(data.slice(0, 4)))
+      .catch(err => console.error(err));
+  }, []);
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-[#09090b] selection:bg-primary/20">
@@ -379,15 +270,82 @@ export default function PremiumHomePage() {
             </h2>
             <p className="text-zinc-500 font-medium">Browse verified listings within your cluster.</p>
           </div>
-          <Link href="/browse" className="inline-flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all">
+          <Link href="/marketplace" className="inline-flex items-center gap-2 text-primary font-bold hover:gap-3 transition-all">
             View full marketplace <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {MOCK_LISTINGS.map((item) => (
-            <ProductCard key={item.id} item={item} />
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {recentListings.map((item) => {
+              const isRent = item.mode === "rent";
+              const accentColor = isRent ? "text-primary border-primary bg-primary/5" : "text-emerald-500 border-emerald-500 bg-emerald-500/5";
+              const tagColor = isRent ? "bg-primary/10 text-primary" : "bg-emerald-500/10 text-emerald-600";
+              const CategoryIcon = CATEGORY_ICONS[item.category] || Package;
+
+              return (
+                <Link 
+                  href={`/listings/${item.id}`} 
+                  key={item.id} 
+                  className="group flex flex-col bg-white dark:bg-zinc-900 rounded-[2rem] border border-zinc-200/80 dark:border-zinc-800/80 p-6 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 hover:border-zinc-300 dark:hover:border-zinc-700 overflow-hidden relative"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-br from-transparent to-zinc-50/50 dark:to-zinc-800/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+                  <div className="flex items-start justify-between mb-5 relative z-10">
+                    <div className={`p-3 rounded-2xl ${accentColor}`}>
+                      <CategoryIcon className="w-6 h-6" />
+                    </div>
+                    <div className={`px-3 py-1 rounded-xl text-[10px] font-extrabold uppercase tracking-widest ${tagColor}`}>
+                      For {item.mode}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col flex-grow relative z-10">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-zinc-500 mb-3">
+                      <MapPin className="h-3.5 w-3.5" />
+                      {item.college}
+                    </div>
+                    
+                    <h3 className="font-black text-2xl text-foreground leading-tight mb-3 group-hover:text-primary transition-colors line-clamp-2">
+                      {item.title}
+                    </h3>
+
+                    <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 line-clamp-3 mb-6 leading-relaxed">
+                      {item.description || "No description provided by the seller."}
+                    </p>
+                    
+                    <div className="mt-auto pt-5 border-t border-zinc-100 dark:border-zinc-800/50 flex items-end justify-between">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] uppercase tracking-widest text-zinc-400 font-extrabold mb-1">
+                          {isRent ? "Rental Rate" : "Asking Price"}
+                        </span>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-3xl font-black text-foreground tracking-tighter">
+                            {item.priceLabel.replace('/day', '')}
+                          </span>
+                          {isRent && (
+                            <span className="text-sm font-bold text-zinc-500">
+                              /day
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800">
+                          <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-foreground">Verified</span>
+                        </div>
+                        <div className={`h-10 w-10 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 shadow-sm ${
+                          isRent ? "bg-primary text-white" : "bg-emerald-500 text-white"
+                        }`}>
+                          <ChevronDown className="h-5 w-5 -rotate-90" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
         </div>
       </section>
 

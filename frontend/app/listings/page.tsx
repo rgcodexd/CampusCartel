@@ -7,5 +7,5 @@ type ListingsPageProps = {
 export default async function ListingsPage({ searchParams }: ListingsPageProps) {
   const params = await searchParams;
   const mode = params?.mode;
-  redirect(mode ? `/browse?type=${mode}` : "/browse");
+  redirect(mode ? `/marketplace?type=${mode}` : "/marketplace");
 }
