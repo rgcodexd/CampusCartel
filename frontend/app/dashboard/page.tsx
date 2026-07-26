@@ -44,7 +44,10 @@ export default function DashboardPage() {
   useEffect(() => {
     let mounted = true;
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) return;
+      if (!session) {
+        router.push("/login");
+        return;
+      }
       // display name from auth metadata
       setUserName(session.user.user_metadata?.full_name || session.user.email || "");
 
