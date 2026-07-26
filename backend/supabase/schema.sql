@@ -173,3 +173,35 @@ $$;
 create or replace trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- Chats
+create table if not exists public.chats (
+  id uuid primary key default gen_random_uuid(),
+  buyer_id uuid references public.profiles(id) not null,
+  seller_id uuid references public.profiles(id) not null,
+  listing_id uuid references public.listings(id) not null,
+  created_at timestamptz default now() not null,
+  updated_at timestamptz default now() not null,
+  unique(buyer_id, seller_id, listing_id)
+);
+
+-- Messages
+create table if not exists public.messages (
+  id uuid primary key default gen_random_uuid(),
+  chat_id uuid references public.chats(id) on delete cascade not null,
+  sender_id uuid references public.profiles(id) not null,
+  message_text text not null,
+  is_read boolean default false,
+  created_at timestamptz default now() not null
+);
+
+alter table public.chats enable row level security;
+alter table public.messages enable row level security;
+
+create policy "Users can view their chats." on public.chats for select using ( auth.uid() = buyer_id or auth.uid() = seller_id );
+create policy "Users can insert their chats." on public.chats for insert with check ( auth.uid() = buyer_id );
+create policy "Users can update their chats." on public.chats for update using ( auth.uid() = buyer_id or auth.uid() = seller_id );
+
+create policy "Users can view their messages." on public.messages for select using ( exists (select 1 from public.chats c where c.id = chat_id and (c.buyer_id = auth.uid() or c.seller_id = auth.uid())) );
+create policy "Users can insert their messages." on public.messages for insert with check ( auth.uid() = sender_id );
+

@@ -24,21 +24,21 @@ export default function ListingDetailPage() {
     });
 
     const fetchListing = async () => {
-      const { data } = await supabase
+      const { data: listingData } = await supabase
         .from("listings")
-        .select(`
-          *,
-          owner:profiles!owner_student_id(
-            id,
-            email,
-            trust_score,
-            college
-          )
-        `)
+        .select("*")
         .eq("id", params.id)
         .single();
       
-      if (data) setListing(data);
+      if (listingData) {
+        const { data: ownerData } = await supabase
+          .from("profiles")
+          .select("id, email, trust_score, college")
+          .eq("id", listingData.owner_student_id)
+          .single();
+          
+        setListing({ ...listingData, owner: ownerData, status: listingData.status || 'Available' });
+      }
       setLoading(false);
     };
 
@@ -77,14 +77,15 @@ export default function ListingDetailPage() {
       });
       
       const resData = await response.json();
+      console.log("Chat creation response:", resData);
       if (resData.chat_id) {
-        router.push(`/chats/${resData.chat_id}`);
+        window.location.href = `/chats/${resData.chat_id}`;
       } else {
-        alert(resData.error || "Failed to start chat");
+        alert(typeof resData.error === 'string' ? resData.error : JSON.stringify(resData.error || "Failed to start chat"));
       }
     } catch (err) {
-      console.error(err);
-      alert("Error starting chat");
+      console.error("Chat action error:", err);
+      alert("Error starting chat: " + (err instanceof Error ? err.message : String(err)));
     }
   };
 

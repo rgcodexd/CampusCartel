@@ -49,7 +49,7 @@ export default function DashboardPage() {
       setUserName(session.user.user_metadata?.full_name || session.user.email || "");
 
       try {
-        const all = await fetchListings("rent");
+        const all = await fetchListings("all");
         const mine = all.filter((l: any) => l.ownerStudentId === session.user.id).map((l: any) => ({
           id: l.id,
           title: l.title,
