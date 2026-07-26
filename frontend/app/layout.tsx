@@ -17,6 +17,9 @@ const body = Merriweather({
 export const metadata: Metadata = {
   title: "Campus Cartel",
   description: "Trusted college-only marketplace for renting and reselling.",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

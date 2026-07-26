@@ -1,9 +1,10 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { Session } from "@supabase/supabase-js";
-import { GraduationCap, MapPin, Moon, Sun, ChevronDown, User, LogOut, Settings, LayoutDashboard, Search, ShieldCheck } from "lucide-react";
+import { MapPin, Moon, Sun, ChevronDown, User, LogOut, Settings, LayoutDashboard, Search, ShieldCheck } from "lucide-react";
 import { TrustBadge } from "./trust-badge";
 
 export function Nav() {
@@ -99,8 +100,8 @@ export function Nav() {
       <div className="flex items-center justify-between px-4 md:px-8 py-4 max-w-7xl mx-auto w-full">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 flex-shrink-0 group">
-          <div className="bg-primary/10 p-2 rounded-xl group-hover:scale-105 transition-transform duration-300">
-            <GraduationCap className="h-5 w-5 text-primary animate-pulse-glow" />
+          <div className="bg-primary/10 p-1 rounded-xl group-hover:scale-105 transition-transform duration-300">
+            <Image src="/logo.png" alt="Logo" width={32} height={32} className="h-7 w-7 object-contain" />
           </div>
           <span className="font-[var(--font-heading)] font-extrabold text-lg uppercase tracking-wider text-foreground group-hover:text-primary transition-colors">
             Campus Cartel
@@ -110,7 +111,7 @@ export function Nav() {
         {/* Center links – Streamlined */}
         <div className="hidden md:flex items-center gap-6 text-sm font-bold">
           <Link href="/" className="text-foreground hover:text-primary transition-colors">Home</Link>
-          <Link href="/marketplace" className="text-zinc-500 hover:text-primary transition-colors">Marketplace</Link>
+          <Link href="/about" className="text-zinc-500 hover:text-primary transition-colors">About</Link>
           <Link href="/chats" className="text-zinc-500 hover:text-primary transition-colors">My Chats</Link>
           <Link href="/map" className="text-zinc-500 hover:text-primary transition-colors">Map</Link>
           <Link href="/dashboard" className="text-zinc-500 hover:text-primary transition-colors">Dashboard</Link>
@@ -122,6 +123,13 @@ export function Nav() {
         {/* Right actions */}
         <div className="flex items-center gap-3 flex-shrink-0">
           
+          <Link 
+            href="/create" 
+            className="hidden sm:flex items-center justify-center gap-1 bg-white dark:bg-zinc-900 text-foreground border-[3px] border-primary px-5 py-1.5 rounded-full font-black text-sm uppercase tracking-widest shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95 hover:bg-primary hover:text-white"
+          >
+            <span className="text-xl font-bold leading-none mb-0.5">+</span> SELL
+          </Link>
+
           {/* ─── LOCATION POPOVER ─── */}
           <div className="relative hidden lg:block" ref={locationRef}>
             <button 

@@ -1,5 +1,4 @@
 import { Server, Socket } from "socket.io";
-import { getDb } from "../config/firebase.js";
 import { encrypt } from "../utils/encryption.js";
 import { createSupabaseServiceClient } from "../config/supabase.js";
 import { randomUUID } from "crypto";
@@ -32,13 +31,18 @@ export function registerChatHandlers(io: Server) {
 
     socket.on("join_chat", async (chatId: string) => {
       try {
-        const chatDoc = await getDb().collection("chats").doc(chatId).get();
-        if (chatDoc.exists) {
-          const chatData = chatDoc.data();
-          if (chatData && (chatData.buyer_id === userId || chatData.seller_id === userId)) {
-            socket.join(chatId);
-            console.log(`User ${userId} joined chat ${chatId}`);
-          }
+        const supabase = createSupabaseServiceClient();
+        if (!supabase) return;
+        
+        const { data: chatData, error } = await supabase
+          .from("chats")
+          .select("*")
+          .eq("id", chatId)
+          .single();
+
+        if (chatData && (chatData.buyer_id === userId || chatData.seller_id === userId)) {
+          socket.join(chatId);
+          console.log(`User ${userId} joined chat ${chatId}`);
         }
       } catch (err) {
         console.error("Error joining chat room", err);
@@ -50,9 +54,15 @@ export function registerChatHandlers(io: Server) {
       if (!chat_id || !message_text) return;
 
       try {
-        const chatDoc = await getDb().collection("chats").doc(chat_id).get();
-        if (!chatDoc.exists) return;
-        const chatData = chatDoc.data();
+        const supabase = createSupabaseServiceClient();
+        if (!supabase) return;
+
+        const { data: chatData, error } = await supabase
+          .from("chats")
+          .select("*")
+          .eq("id", chat_id)
+          .single();
+
         if (!chatData || (chatData.buyer_id !== userId && chatData.seller_id !== userId)) return;
 
         const messageId = randomUUID();
@@ -68,11 +78,11 @@ export function registerChatHandlers(io: Server) {
           created_at: createdAt
         };
 
-        await getDb().collection("chats").doc(chat_id).collection("messages").doc(messageId).set(msgData);
+        await supabase.from("messages").insert(msgData);
 
-        await getDb().collection("chats").doc(chat_id).update({
+        await supabase.from("chats").update({
           updated_at: createdAt
-        });
+        }).eq("id", chat_id);
 
         const msgToEmit = {
           ...msgData,

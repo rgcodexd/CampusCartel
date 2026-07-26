@@ -64,7 +64,10 @@ export default function ChatDetailPage() {
       });
 
       currentSocket.on("new_message", (msg) => {
-        setMessages(prev => [...prev, msg]);
+        setMessages(prev => {
+          if (prev.some(m => m.id === msg.id)) return prev;
+          return [...prev, msg];
+        });
       });
     };
 

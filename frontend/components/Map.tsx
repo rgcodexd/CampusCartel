@@ -30,7 +30,7 @@ export default function Map({ colleges }: { colleges: any[] }) {
 
   useEffect(() => {
     // If colleges exist, center on the first one that has valid coordinates
-    const validColleges = colleges.filter(c => c.lat !== 0 && c.lng !== 0);
+    const validColleges = colleges.filter(c => c.lat != null && c.lng != null && c.lat !== 0 && c.lng !== 0);
     if (validColleges.length > 0) {
       setCenter([validColleges[0].lat, validColleges[0].lng]);
     }
@@ -49,7 +49,7 @@ export default function Map({ colleges }: { colleges: any[] }) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {colleges.filter(c => c.lat !== 0 && c.lng !== 0).map((college) => (
+        {colleges.filter(c => c.lat != null && c.lng != null && c.lat !== 0 && c.lng !== 0).map((college) => (
           <Marker 
             key={college.id} 
             position={[college.lat, college.lng]}
